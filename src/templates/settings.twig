@@ -1,0 +1,69 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.autosuggestField({
+    label: "Matomo URL"|t('matomo-proxy'),
+    instructions: "The real Matomo instance URL, ending in a slash. Never exposed to visitors — this is what the proxy hides. You can enter an environment variable name, e.g. `$MATOMO_URL`."|t('matomo-proxy'),
+    id: 'matomoUrl',
+    name: 'matomoUrl',
+    value: settings.matomoUrl,
+    suggestEnvVars: true,
+    required: true,
+    errors: settings.getErrors('matomoUrl'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Token Auth"|t('matomo-proxy'),
+    instructions: "The `token_auth` for a Matomo user with write or admin access to the tracked site(s) — required so the proxy can authorize the visitor's real IP address. Strongly recommended: enter an environment variable name (e.g. `$MATOMO_TOKEN_AUTH`) rather than the literal token, so the secret itself is never saved to project config."|t('matomo-proxy'),
+    id: 'tokenAuth',
+    name: 'tokenAuth',
+    value: settings.tokenAuth,
+    suggestEnvVars: true,
+    required: true,
+    errors: settings.getErrors('tokenAuth'),
+}) }}
+
+{{ forms.textField({
+    label: "Base Path"|t('matomo-proxy'),
+    instructions: "The site-relative path this plugin's routes are served under. Defaults to `matomo-proxy`; rename it to something unrelated-looking if you want to fully disguise that Matomo is in use."|t('matomo-proxy'),
+    id: 'basePath',
+    name: 'basePath',
+    value: settings.basePath,
+    required: true,
+    errors: settings.getErrors('basePath'),
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Proxy Heatmap & Session Recording"|t('matomo-proxy'),
+    instructions: "Also proxy the Heatmap & Session Recording plugin's `configs.php` endpoint. Turn this off if you don't use that Matomo plugin."|t('matomo-proxy'),
+    id: 'includeHeatmapSessionRecording',
+    name: 'includeHeatmapSessionRecording',
+    on: settings.includeHeatmapSessionRecording,
+}) }}
+
+{{ forms.textField({
+    label: "Timeout"|t('matomo-proxy'),
+    instructions: "Maximum seconds to wait for the Matomo server to respond."|t('matomo-proxy'),
+    id: 'timeout',
+    name: 'timeout',
+    type: 'number',
+    min: 1,
+    value: settings.timeout,
+    errors: settings.getErrors('timeout'),
+}) }}
+
+{{ forms.textField({
+    label: "IP Forward Header"|t('matomo-proxy'),
+    instructions: "Optional. Forward the visitor IP via this HTTP header (e.g. `X-Forwarded-For`) instead of the default `cip` tracking parameter. Only works if Matomo's trusted-proxy settings are configured for this header — see the README. Leave blank to use the default method."|t('matomo-proxy'),
+    id: 'httpIpForwardHeader',
+    name: 'httpIpForwardHeader',
+    value: settings.httpIpForwardHeader,
+}) }}
+
+{{ forms.textareaField({
+    label: "Cookie Allowlist"|t('matomo-proxy'),
+    instructions: "One cookie name per line. Entries ending in `*` match by prefix. Only cookies matching an entry here are forwarded to Matomo. Keep `matomo_ignore` in this list, or visitors who opted out get silently re-tracked."|t('matomo-proxy'),
+    id: 'cookieAllowlist',
+    name: 'cookieAllowlist',
+    value: settings.cookieAllowlist,
+    rows: 8,
+}) }}
