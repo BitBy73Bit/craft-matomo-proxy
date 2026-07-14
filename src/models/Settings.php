@@ -44,6 +44,23 @@ class Settings extends Model
     /** Whether to also proxy the Heatmap & Session Recording plugin's `configs.php` endpoint. */
     public bool $includeHeatmapSessionRecording = true;
 
+    /**
+     * Heatmap configs to register directly via `HeatmapSessionRecording.addConfig`, bypassing
+     * Matomo's automatic HTTP config fetch entirely — that fetch derives its URL from the tracker
+     * URL in a way that's incompatible with this plugin's routing (see the README). Find these
+     * values in Matomo under Administration -> Websites -> Heatmap & Session Recording.
+     *
+     * @var array<int, array{id: string, sampleRate: string}>
+     */
+    public array $heatmaps = [];
+
+    /**
+     * Session recording configs, registered the same way as {@see $heatmaps}.
+     *
+     * @var array<int, array{id: string, sampleRate: string, minTime: string, keystrokes: bool, activity: bool}>
+     */
+    public array $sessionRecordings = [];
+
     public function getMatomoUrl(): ?string
     {
         return App::parseEnv($this->matomoUrl);

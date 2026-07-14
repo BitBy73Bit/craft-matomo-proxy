@@ -84,4 +84,74 @@ final class ExtensionTrackingCodeTest extends TestCase
             $html
         );
     }
+
+    public function testHeatmapSessionRecordingAddConfigIsEmittedByDefault(): void
+    {
+        // Emitted even with nothing configured — an empty addConfig() call still marks Matomo's
+        // config state as already-received, which is what suppresses its broken auto-fetch.
+        $html = $this->extension->buildTrackingCode('/insights/', 10);
+
+        self::assertStringContainsString('_paq.push(["HeatmapSessionRecording.addConfig"', $html);
+        self::assertStringContainsString('"heatmaps":[]', $html);
+        self::assertStringContainsString('"sessions":[]', $html);
+    }
+
+    public function testHeatmapSessionRecordingCanBeDisabled(): void
+    {
+        $html = $this->extension->buildTrackingCode('/insights/', 10, [], false);
+
+        self::assertStringNotContainsString('HeatmapSessionRecording', $html);
+    }
+
+    public function testHeatmapConfigIsFormattedForAddConfig(): void
+    {
+        $html = $this->extension->buildTrackingCode('/insights/', 10, [], true, [
+            ['id' => '5', 'sampleRate' => '50'],
+        ]);
+
+        self::assertStringContainsString('"heatmaps":[{"id":5,"sample_rate":"50"}]', $html);
+    }
+
+    public function testHeatmapSampleRateDefaultsTo100WhenOmitted(): void
+    {
+        $html = $this->extension->buildTrackingCode('/insights/', 10, [], true, [
+            ['id' => '5'],
+        ]);
+
+        self::assertStringContainsString('"sample_rate":"100"', $html);
+    }
+
+    public function testHeatmapRowsWithoutAnIdAreSkipped(): void
+    {
+        $html = $this->extension->buildTrackingCode('/insights/', 10, [], true, [
+            ['id' => ''],
+            ['sampleRate' => '50'],
+        ]);
+
+        self::assertStringContainsString('"heatmaps":[]', $html);
+    }
+
+    public function testSessionRecordingConfigIsFormattedForAddConfig(): void
+    {
+        $html = $this->extension->buildTrackingCode('/insights/', 10, [], true, [], [
+            ['id' => '6', 'sampleRate' => '75', 'minTime' => '30', 'keystrokes' => true, 'activity' => false],
+        ]);
+
+        self::assertStringContainsString(
+            '"sessions":[{"id":6,"sample_rate":"75","min_time":30,"keystrokes":true,"activity":false}]',
+            $html
+        );
+    }
+
+    public function testSessionRecordingDefaultsWhenFieldsOmitted(): void
+    {
+        $html = $this->extension->buildTrackingCode('/insights/', 10, [], true, [], [
+            ['id' => '6'],
+        ]);
+
+        self::assertStringContainsString(
+            '"sessions":[{"id":6,"sample_rate":"100","min_time":0,"keystrokes":false,"activity":false}]',
+            $html
+        );
+    }
 }

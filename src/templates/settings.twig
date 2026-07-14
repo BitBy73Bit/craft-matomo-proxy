@@ -33,8 +33,8 @@
 }) }}
 
 {{ forms.lightswitchField({
-    label: "Proxy Heatmap & Session Recording"|t('matomo-proxy'),
-    instructions: "Also proxy the Heatmap & Session Recording plugin's `configs.php` endpoint. Turn this off if you don't use that Matomo plugin."|t('matomo-proxy'),
+    label: "Manage Heatmap & Session Recording"|t('matomo-proxy'),
+    instructions: "Proxies the Heatmap & Session Recording plugin's `configs.php` endpoint, and has `matomoProxyTrackingCode()` register the Heatmaps/Session Recordings below directly via Matomo's addConfig API — which also suppresses Matomo's automatic HTTP config fetch (broken through this plugin's routing; see the README). Turn this off if you don't use Matomo's Heatmap & Session Recording plugin."|t('matomo-proxy'),
     id: 'includeHeatmapSessionRecording',
     name: 'includeHeatmapSessionRecording',
     on: settings.includeHeatmapSessionRecording,
@@ -66,4 +66,39 @@
     name: 'cookieAllowlist',
     value: settings.cookieAllowlist,
     rows: 8,
+}) }}
+
+{{ forms.editableTableField({
+    label: "Heatmaps"|t('matomo-proxy'),
+    instructions: "Registered directly via Matomo's addConfig API, bypassing its automatic HTTP config fetch — that fetch derives its URL from the tracker URL in a way that's incompatible with this plugin's routing (see the README). Find these values in Matomo under Administration -> Websites -> Heatmap & Session Recording."|t('matomo-proxy'),
+    id: 'heatmaps',
+    name: 'heatmaps',
+    cols: {
+        id: {heading: "ID"|t('matomo-proxy'), type: 'singleline'},
+        sampleRate: {heading: "Sample Rate (%)"|t('matomo-proxy'), type: 'singleline'},
+    },
+    rows: settings.heatmaps,
+    addRowLabel: "Add a heatmap"|t('matomo-proxy'),
+    allowAdd: true,
+    allowDelete: true,
+    allowReorder: true,
+}) }}
+
+{{ forms.editableTableField({
+    label: "Session Recordings"|t('matomo-proxy'),
+    instructions: "Registered the same way as Heatmaps above."|t('matomo-proxy'),
+    id: 'sessionRecordings',
+    name: 'sessionRecordings',
+    cols: {
+        id: {heading: "ID"|t('matomo-proxy'), type: 'singleline'},
+        sampleRate: {heading: "Sample Rate (%)"|t('matomo-proxy'), type: 'singleline'},
+        minTime: {heading: "Min Time (s)"|t('matomo-proxy'), type: 'singleline'},
+        keystrokes: {heading: "Keystrokes"|t('matomo-proxy'), type: 'checkbox'},
+        activity: {heading: "Activity"|t('matomo-proxy'), type: 'checkbox'},
+    },
+    rows: settings.sessionRecordings,
+    addRowLabel: "Add a session recording"|t('matomo-proxy'),
+    allowAdd: true,
+    allowDelete: true,
+    allowReorder: true,
 }) }}
