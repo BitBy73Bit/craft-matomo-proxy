@@ -4,6 +4,7 @@ namespace bitbytebit\matomoproxy;
 
 use bitbytebit\matomoproxy\models\Settings;
 use bitbytebit\matomoproxy\services\Proxy;
+use bitbytebit\matomoproxy\web\twig\Extension;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
@@ -30,6 +31,8 @@ class Plugin extends BasePlugin
         $this->setComponents([
             'proxy' => Proxy::class,
         ]);
+
+        Craft::$app->getView()->registerTwigExtension(new Extension());
 
         Craft::$app->onInit(function() {
             $this->_registerSiteUrlRules();

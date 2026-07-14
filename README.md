@@ -2,7 +2,7 @@
 
 Proxies [Matomo](https://matomo.org/) tracking requests through your own domain, so the real Matomo server URL is never exposed to visitors, in your page source, or to search engines.
 
-This is a Craft CMS port of the official [`matomo-org/tracker-proxy`](https://github.com/matomo-org/tracker-proxy) PHP scripts — same tracking/bulk-request/cookie-forwarding behaviour, wired up as a native Craft plugin with CP settings, environment-variable-aware config, and a test suite, rather than loose PHP files dropped in your web root.
+This is a Craft CMS port of the official [`matomo-org/tracker-proxy`](https://github.com/matomo-org/tracker-proxy) PHP scripts — same tracking/bulk-request/cookie-forwarding behaviour, wired up as a native Craft plugin with CP settings, environment-variable-aware config, and a test suite.
 
 ## Why not just drop the upstream files in?
 
@@ -69,17 +69,41 @@ With the default `basePath` of `matomo-proxy`, this plugin serves:
 | `/matomo-proxy/hit` | `GET`, `POST` | `matomo.php` (single and bulk tracking requests) |
 | `/matomo-proxy/hsr-config` | `GET` | `plugins/HeatmapSessionRecording/configs.php` (if `includeHeatmapSessionRecording` is enabled) |
 
-## Updating your tracking snippet
+## Adding the tracking code to your templates
 
-Change the Matomo JavaScript snippet (**Matomo → Administration → Websites → JavaScript Tracking Code**) to point at your own domain instead of the real Matomo host:
+The plugin registers a `matomoProxyTrackingCode()` Twig function that outputs the tracker `<script>`/`<noscript>` block already wired up to your current `basePath` — no hardcoded URLs to keep in sync if you rename it later:
+
+```twig
+{{ matomoProxyTrackingCode(10) }}
+```
+
+Pass a second argument for the optional extras Matomo's own generated snippet usually includes:
+
+```twig
+{{ matomoProxyTrackingCode(10, {
+    cookieDomain: '*.example.com',
+    doNotTrack: true,
+    requireCookieConsent: true,
+}) }}
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `cookieDomain` | *(unset)* | If set, pushes `setCookieDomain` before tracking starts. |
+| `doNotTrack` | `true` | Pushes `setDoNotTrack`. |
+| `requireCookieConsent` | `true` | Pushes `requireCookieConsent`, so Matomo sets no cookie until your own consent flow calls `rememberCookieConsentGiven`/`forgetCookieConsentGiven`. Set to `false` if you don't have a cookie-consent flow and want tracking to start immediately. |
+
+If you're not using Craft templates for this (e.g. embedding it elsewhere), the equivalent raw HTML is:
 
 ```html
 <script>
   var _paq = window._paq = window._paq || [];
+  _paq.push(['requireCookieConsent']);
+  _paq.push(["setDoNotTrack", true]);
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
   (function() {
-    var u = "/matomo-proxy/"; // same-origin, not your real Matomo URL
+    var u = "/matomo-proxy/"; // same-origin, not your real Matomo URL — matches your basePath setting
     _paq.push(['setTrackerUrl', u + 'hit']);
     _paq.push(['setSiteId', 'YOUR_SITE_ID']);
     var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
